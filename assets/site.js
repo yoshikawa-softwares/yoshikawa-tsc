@@ -40,6 +40,11 @@ if ('IntersectionObserver' in window) {
     }
   }, {threshold: 0.06});
   document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  const artworkObserver = new IntersectionObserver(entries => {
+    for (const entry of entries) entry.target.classList.toggle('is-offscreen', !entry.isIntersecting);
+  });
+  document.querySelectorAll('.crystal-art').forEach(el => artworkObserver.observe(el));
 }
 
 const motionButton = document.querySelector('.motion-toggle');

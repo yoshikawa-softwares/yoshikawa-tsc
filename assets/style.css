@@ -109,3 +109,58 @@ html.motion-paused .conversation-track{height:auto;min-height:0}html.motion-paus
 
 @media(max-width:360px){.demo-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.demo-tabs button{flex-direction:row;justify-content:flex-start;min-height:44px;padding:9px;font-size:10px}.hero-more{font-size:11px;white-space:nowrap}}
 @media(max-width:360px){.menu-cover{height:142px;padding:10px;gap:6px}.menu-cover-text{flex:1;width:auto;gap:2px}.menu-cover-text .cover-mark{font-size:7px;white-space:nowrap}.menu-cover-text strong{font-size:9px;white-space:nowrap}.menu-cover-text span:not(.cover-mark){font-size:6px;padding:2px 3px;white-space:nowrap}.cover-glyph{width:48px;height:48px;border-radius:15px;font-size:19px}}
+
+/* Crystal direction: dark surfaces, individually colored glass illustrations. */
+:root{--bg:#050608;--surface:#0a0b0e;--card:#111217;--muted:#aaaeb9;--line:#2a2c32;--link:#83caff}
+.intro-section,.projects-section{background:#060709}
+.conversation-section,.developers,.levels-section,.site-footer{background:#08090c}
+.feature,.project-card{background:linear-gradient(145deg,#101116,#090a0d 72%);border:1px solid #282a31;color:#f6f6fa}
+.feature{--glow:rgba(63,225,157,.18);--accent:#83edbc}
+.feature-admin{--glow:rgba(29,220,139,.21);--accent:#75ecb3}
+.feature-media{--glow:rgba(255,72,131,.2);--accent:#ff93b9}
+.feature-games{--glow:rgba(255,185,53,.2);--accent:#ffd06a}
+.feature-copy>p:not(.feature-label){color:#c2c4cc;opacity:1}
+.feature-label,.feature-link{color:var(--accent)}
+.feature:hover,.project-card:hover{box-shadow:0 22px 60px #0008;border-color:#ffffff35}
+.crystal-art{isolation:isolate;display:grid;place-items:center;overflow:visible;pointer-events:none}
+.crystal-art::before{content:'';position:absolute;inset:5% 0 0;z-index:-1;background:radial-gradient(ellipse at 50% 58%,var(--glow),transparent 65%);pointer-events:none}
+.crystal-art img{position:relative;display:block;object-fit:contain;width:min(100%,275px);height:auto;max-height:100%;animation:crystal-drift 7s ease-in-out infinite;transition:scale .65s var(--ease);will-change:transform}
+.crystal-art.is-offscreen img{animation-play-state:paused}
+.feature:hover .crystal-art img,.project-card:hover .crystal-art img{scale:1.05}
+.crystal-sticker img,.crystal-stream img{animation-delay:-2.3s}
+.crystal-star img,.crystal-github img{animation-delay:-4.6s}
+@keyframes crystal-drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.project-card{min-height:475px}
+.project-card p{opacity:1;color:#b9bbc5}
+.project-card>div:first-child>span{color:#adb1bd;opacity:1}
+.project-api{--glow:rgba(0,183,255,.23)}
+.project-stream{--glow:rgba(255,44,107,.22)}
+.project-github{--glow:rgba(166,98,255,.2)}
+.project-art.crystal-art{bottom:30px;height:250px}
+.project-art.crystal-art img{width:min(100%,285px)}
+.project-arrow{border-color:#ffffff70;color:#e8eaf0}
+.project-card:hover .project-arrow{background:#ffffff15}
+.github-mark{display:inline-block;width:17px;height:17px;vertical-align:2px;margin-left:4px;filter:invert(1);opacity:.8}
+.levels-section{color:#f5f6f8}
+.level-copy>p:not(.eyebrow),.benefit-list p{color:#b5bac4}
+.level-copy code,.steps-grid code,.faq-list code{background:#1c2026;color:#e5e9f1}
+.level-simulator{background:linear-gradient(145deg,#15171c,#101116);border-color:#30323b;box-shadow:0 24px 70px #0008}
+.level-simulator[data-rank=bronze]{--rank:#efaa7f}
+.level-simulator[data-rank=silver]{--rank:#c4d7ef}
+.level-simulator[data-rank=gold]{--rank:#ffd362}
+.level-simulator[data-rank=diamond]{--rank:#65e6ff}
+.level-simulator[data-rank=stellar]{--rank:#d8a5ff}
+.rank-buttons button[aria-pressed=true]{background:color-mix(in srgb,var(--rank) 13%,#111217);border-color:color-mix(in srgb,var(--rank) 34%,#111217)}
+.benefit-symbol,.rank-token{border:0;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(145deg,#fff 8%,var(--gem-color) 44%,#fff 54%,var(--gem-color) 78%);background-clip:text;-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 2px 5px var(--gem-shadow))}
+.diamond-symbol,.token-diamond{--gem-color:#50dffa;--gem-shadow:#00c8ff80}
+.star-symbol,.token-stellar{--gem-color:#d499ff;--gem-shadow:#b44fff80}
+.token-bronze{--gem-color:#ef986a;--gem-shadow:#d8684380}
+.token-silver{--gem-color:#aacaf2;--gem-shadow:#699bda80}
+.token-gold{--gem-color:#ffcf57;--gem-shadow:#ffb32980}
+.benefit-symbol{font-size:33px}
+.rank-token{font-size:22px}
+.demo-shell,.code-window,.tech-terminal{background:#101116;border-color:#2b2d34}
+.demo-nav{background:#0b0c10}
+.closing{background:radial-gradient(ellipse at 50% 100%,#113147 0,transparent 62%),#080b0e;color:#f5f6f8}
+.site-footer{border-top:1px solid #202127}
+@media(max-width:760px){.feature{min-height:475px}.crystal-art img{width:min(100%,250px)}.project-card{min-height:400px}.project-art.crystal-art{height:215px;bottom:37px}.project-art.crystal-art img{width:min(100%,225px)}}

@@ -1,5 +1,4 @@
 const root = document.documentElement;
-const body = document.body;
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const menu = document.querySelector('.menu-toggle');
 const nav = document.querySelector('#nav');
@@ -17,15 +16,6 @@ document.addEventListener('keydown', event => {
 });
 document.addEventListener('click', event => { if (!event.target.closest('.site-header')) setMenu(false); });
 
-const theme = document.querySelector('.theme-toggle');
-const sun = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M19 5l-1.5 1.5m-11 11L5 19"/></svg>';
-const moon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M19.5 15.5A8 8 0 0 1 8.5 4.5a8 8 0 1 0 11 11Z"/></svg>';
-theme?.addEventListener('click', () => {
-  const dark = body.classList.toggle('dark');
-  const label = dark ? 'Ativar tema claro' : 'Ativar tema escuro';
-  theme.setAttribute('aria-label', label); theme.title = label;
-  theme.innerHTML = dark ? sun : moon;
-});
 
 let toastTimer;
 for (const button of document.querySelectorAll('[data-copy]')) {
@@ -97,7 +87,7 @@ if (hero || track) {
 }
 
 const examples = {
-  menu: {command:'!menu', kicker:'MENU PRINCIPAL', title:'Por onde vamos começar?', rows:[['Administração','!menuadm'],['Figurinhas','!menustickers'],['Níveis','!level']], note:'Algumas funções dependem de permissões ou benefícios ativos.'},
+  menu: {command:'!menu', kicker:'RESPOSTA DO BOT', title:'Menu principal', rows:[], note:'Recriação ilustrativa da versão 8.6.17. Usuário e VIP são exemplos; o menu pode mudar.'},
   admin: {command:'!status', kicker:'ADMINISTRAÇÃO', title:'Configurações do grupo', rows:[['Moderação','Configurável'],['Permissões','Por função'],['Diagnóstico','!status']], note:'Administradores podem consultar o status e escolher as configurações adequadas ao grupo.'},
   media: {command:'!menustickers', kicker:'MÍDIA E FIGURINHAS', title:'Figurinhas para a conversa', rows:[['Categoria','Figurinhas'],['Ferramentas','Criação e edição']], note:'Abra o menu de figurinhas para encontrar as ferramentas disponíveis.'},
   level: {command:'!level', kicker:'NÍVEIS', title:'Seu próximo nível', rows:[['Rank atual','Ouro'],['Pontuação','12.500 pontos'],['Próximo marco','7.500 para Diamante']], note:'Pontuação ilustrativa. O simulador abaixo permite explorar os marcos e benefícios.'}
@@ -121,6 +111,7 @@ if (demoStage) {
       card.querySelector('.response-kicker').textContent = example.kicker;
       card.querySelector('.response-title').textContent = example.title;
       const rows = card.querySelector('.response-body'); rows.replaceChildren();
+      if (key === 'menu') rows.append(document.querySelector('#menu-preview-template').content.cloneNode(true));
       for (const [label, value] of example.rows) {
         const row = document.createElement('div');
         const name = document.createElement('span'); name.textContent = label;

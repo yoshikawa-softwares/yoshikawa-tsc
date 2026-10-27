@@ -35,8 +35,12 @@ for name, page in pages.items():
         target = str(Path(target))
         assert (root / target).is_file(), f'{name}: destino ausente {ref}'
         if url.fragment:
-            assert url.fragment in pages[target].ids, f'{name}: âncora ausente {ref}'
+            resource = pages.get(target) or Page(root / target)
+            assert url.fragment in resource.ids, f'{name}: âncora ausente {ref}'
 assert (root / 'assets/social.jpg').is_file()
+from xml.etree import ElementTree
+for svg in (root / 'assets').rglob('*.svg'):
+    ElementTree.parse(svg)
 for script in ('site.js', 'pixels.js'):
     subprocess.run(['node', '--check', str(root / 'assets' / script)], check=True)
 print(f'OK: {len(pages)} páginas; arquivos, âncoras, IDs, hierarquia h1, links externos e sintaxe JS.')

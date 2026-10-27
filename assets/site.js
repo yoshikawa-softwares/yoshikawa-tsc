@@ -1,3 +1,4 @@
+function uiIcon(name) { return `<svg class="ui-icon" width="18" height="18" aria-hidden="true"><use href="assets/icons/ui.svg#${name}"/></svg>`; }
 const menuButton = document.querySelector('.menu-toggle');
 const navigation = document.querySelector('#navigation');
 function setMenu(open) {
@@ -48,19 +49,17 @@ const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 const motionButton = document.querySelector('.motion-toggle');
 if (motionButton) {
   function reflectMotionPreference() {
+    const paused = reducedMotion.matches || document.documentElement.classList.contains('motion-paused');
     motionButton.disabled = reducedMotion.matches;
-    const paused = document.documentElement.classList.contains('motion-paused');
-    motionButton.setAttribute('aria-pressed', String(reducedMotion.matches || paused));
+    motionButton.setAttribute('aria-pressed', String(paused));
     motionButton.setAttribute('aria-label', reducedMotion.matches ? 'Movimento reduzido pelo sistema' : paused ? 'Retomar animações' : 'Pausar animações');
-    motionButton.querySelector('span').textContent = reducedMotion.matches ? 'Reduzido' : paused ? 'Retomar' : 'Pausar';
+    motionButton.innerHTML = uiIcon(paused ? 'play' : 'pause') + '<span>' + (reducedMotion.matches ? 'Reduzido pelo sistema' : paused ? 'Retomar animações' : 'Pausar animações') + '</span>';
   }
   reflectMotionPreference();
   reducedMotion.addEventListener('change', reflectMotionPreference);
   motionButton.addEventListener('click', () => {
-    const paused = document.documentElement.classList.toggle('motion-paused');
-    motionButton.setAttribute('aria-pressed', String(paused));
-    motionButton.setAttribute('aria-label', paused ? 'Retomar animações' : 'Pausar animações');
-    motionButton.querySelector('span').textContent = paused ? 'Retomar' : 'Pausar';
+    document.documentElement.classList.toggle('motion-paused');
+    reflectMotionPreference();
   });
 }
 if ('IntersectionObserver' in window) {
@@ -74,9 +73,9 @@ document.addEventListener('visibilitychange', () => document.documentElement.cla
 const scoreInput = document.querySelector('#score');
 if (scoreInput) {
   const ranks = [
-    { name: 'Bronze', score: 0 }, { name: 'Prata', score: 2000 },
-    { name: 'Ouro', score: 4000 }, { name: 'Diamante', score: 20000 },
-    { name: 'Estelar', score: 100000 }
+    { name: 'Bronze', score: 0, icon: 'bronze' }, { name: 'Prata', score: 2000, icon: 'silver' },
+    { name: 'Ouro', score: 4000, icon: 'gold' }, { name: 'Diamante', score: 20000, icon: 'diamond' },
+    { name: 'Estelar', score: 100000, icon: 'stellar' }
   ];
   const format = new Intl.NumberFormat('pt-BR');
   const rankButtons = [...document.querySelectorAll('[data-score]')];
@@ -88,6 +87,8 @@ if (scoreInput) {
     const next = ranks[index + 1];
     const progress = next ? (score - current.score) / (next.score - current.score) : 1;
     document.querySelector('.level-current').textContent = current.name;
+    document.querySelector('.level-simulator').dataset.rank = current.icon;
+    document.querySelector('.level-emblem').src = `assets/icons/${current.icon}.svg`;
     document.querySelector('.level-points').textContent = format.format(score);
     document.querySelector('.level-next').textContent = next ? `${format.format(next.score - score)} para ${next.name}` : 'Nível máximo: Estelar';
     document.querySelector('#score-output').textContent = `${format.format(score)} pontos`;
@@ -103,15 +104,15 @@ if (scoreInput) {
   renderLevel();
 }
 const themeButton=document.querySelector('.theme-toggle');
-themeButton.addEventListener('click',()=>{const light=document.body.classList.toggle('light');const label=light?'Ativar tema escuro':'Ativar tema claro';themeButton.setAttribute('aria-label',label);themeButton.title=label;themeButton.textContent=light?'◔':'☼';});
+themeButton.addEventListener('click',()=>{const light=document.body.classList.toggle('light');const label=light?'Ativar tema escuro':'Ativar tema claro';themeButton.setAttribute('aria-label',label);themeButton.title=label;themeButton.innerHTML=uiIcon(light?'moon':'sun');});
 const mascot=document.querySelector('.mascot');mascot?.addEventListener('click',()=>{mascot.dataset.color=String(((Number(mascot.dataset.color)||0)+1)%3);});
 const howStage=document.querySelector('.how-stage');
 if(howStage&&'IntersectionObserver' in window){const steps=[...document.querySelectorAll('.how-step')];const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(!entry.isIntersecting)continue;howStage.dataset.active=entry.target.dataset.step;for(const step of steps)step.classList.toggle('is-active',step===entry.target);}},{rootMargin:'-15% 0px -30% 0px',threshold:.15});for(const step of steps)observer.observe(step);howStage.dataset.active='0';}
-const examples={
-menu:{command:'!menu',title:'Por onde vamos começar?',html:'<div class="reply-row"><span>Administração</span><code>!menuadm</code></div><div class="reply-row"><span>Figurinhas</span><code>!menustickers</code></div><div class="reply-row"><span>Downloads</span><code>!menudownloads</code></div>',note:'Escolha uma categoria para ver os comandos. Alguns recursos dependem de permissões ou benefícios ativos.'},
-admin:{command:'!status',title:'Configurações do grupo',html:'<div class="reply-row"><span>Moderação</span><code>Configurável</code></div><div class="reply-row"><span>Permissões</span><code>Por função</code></div><div class="reply-row"><span>Diagnóstico</span><code>!status</code></div>',note:'Os administradores podem consultar o status e escolher as configurações adequadas ao grupo.'},
-media:{command:'!menustickers',title:'Figurinhas para a conversa',html:'<div class="reply-stickers" aria-label="Exemplos de figurinhas"><span>✳</span><span>&gt;_</span><span>♡</span></div><div class="reply-row"><span>Categoria</span><code>Figurinhas</code></div>',note:'Abra o menu de figurinhas para encontrar as ferramentas de criação e edição disponíveis.'},
-level:{command:'!level',title:'Seu próximo nível',html:'<div class="reply-rank"><span>◇</span><div><strong>Ouro · 12.500 pontos</strong><small>7.500 para Diamante</small></div></div><div class="reply-progress"><i></i></div>',note:'Pontuação ilustrativa. O simulador abaixo permite explorar os marcos e benefícios.'}
+const examples = {
+  menu: {command:'!menu', icon:'menu', title:'Por onde vamos começar?', html:'<div class="reply-row"><span>Administração</span><code>!menuadm</code></div><div class="reply-row"><span>Figurinhas</span><code>!menustickers</code></div><div class="reply-row"><span>Downloads</span><code>!menudownloads</code></div>', note:'Escolha uma categoria para ver os comandos. Alguns recursos dependem de permissões ou benefícios ativos.'},
+  admin: {command:'!status', icon:'admin', title:'Configurações do grupo', html:'<div class="reply-row"><span>Moderação</span><code>Configurável</code></div><div class="reply-row"><span>Permissões</span><code>Por função</code></div><div class="reply-row"><span>Diagnóstico</span><code>!status</code></div>', note:'Os administradores podem consultar o status e escolher as configurações adequadas ao grupo.'},
+  media: {command:'!menustickers', icon:'media', title:'Figurinhas para a conversa', html:'<div class="reply-art" aria-hidden="true"><img src="assets/icons/media.svg" width="112" height="112" alt=""></div><div class="reply-row"><span>Categoria</span><code>Figurinhas</code></div>', note:'Abra o menu de figurinhas para encontrar as ferramentas de criação e edição disponíveis.'},
+  level: {command:'!level', icon:'gold', title:'Seu próximo nível', html:'<div class="reply-rank"><img src="assets/icons/gold.svg" width="55" height="55" alt=""><div><strong>Ouro · 12.500 pontos</strong><small>7.500 para Diamante</small></div></div><div class="reply-progress"><i></i></div>', note:'Pontuação ilustrativa. O simulador abaixo permite explorar os marcos e benefícios.'}
 };
 function resolveExample(command){const normalized=command.trim().toLowerCase();if(['!menu','menu'].includes(normalized))return'menu';if(['!status','!menuadm'].includes(normalized))return'admin';if(['!menustickers','!sticker','!s'].includes(normalized))return'media';if(['!level','!rank'].includes(normalized))return'level';return null;}
 const messageArea=document.querySelector('.demo-messages');
@@ -120,6 +121,6 @@ function showExample(key,typedCommand){clearTimeout(timer);animation?.cancel();a
 const demo=key?examples[key]:{command:typedCommand,title:'Vamos testar um comando de exemplo?',html:'<div class="reply-row"><span>Menu</span><code>!menu</code></div><div class="reply-row"><span>Grupo</span><code>!status</code></div><div class="reply-row"><span>Figurinhas</span><code>!menustickers</code></div><div class="reply-row"><span>Nível</span><code>!level</code></div>',note:'Esta prévia entende apenas os comandos acima. No WhatsApp, consulte o menu completo do bot.'};
 messageArea.replaceChildren();const user=document.createElement('div');user.className='chat-message';user.innerHTML='<span class="person-avatar">K</span><div><span class="message-author">Você <small>agora</small></span><p class="typed-command"></p></div>';user.querySelector('.typed-command').textContent=typedCommand||demo.command;messageArea.append(user);
 const bot=document.createElement('div');bot.className='chat-message';bot.innerHTML='<img class="message-avatar" src="assets/yoshi.svg" width="31" height="34" alt=""><div class="demo-reply"><span class="message-author">Yoshikawa TSC <span class="bot-tag">BOT</span></span><div class="typing" aria-label="Preparando exemplo"><i></i><i></i><i></i></div></div>';messageArea.append(bot);
-function finish(){const reply=bot.querySelector('.demo-reply');const box=document.createElement('div');box.className='reply-box';const heading=document.createElement('h4');heading.textContent=demo.title;box.append(heading);const content=document.createElement('div');content.innerHTML=demo.html;box.append(content);const note=document.createElement('p');note.textContent=demo.note;box.append(note);reply.querySelector('.typing')?.remove();reply.append(box);if(!reducedMotion.matches&&!document.documentElement.classList.contains('motion-paused'))animation=box.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:400,easing:'cubic-bezier(.22,1,.36,1)'});}
+function finish(){const reply=bot.querySelector('.demo-reply');const box=document.createElement('div');box.className='reply-box';box.dataset.kind=key||'menu';const heading=document.createElement('h4');const headingIcon=document.createElement('img');headingIcon.src=`assets/icons/${demo.icon||'menu'}.svg`;headingIcon.width=32;headingIcon.height=32;headingIcon.alt='';headingIcon.className='category-art';heading.append(headingIcon,document.createTextNode(demo.title));box.append(heading);const content=document.createElement('div');content.innerHTML=demo.html;box.append(content);const note=document.createElement('p');note.textContent=demo.note;box.append(note);reply.querySelector('.typing')?.remove();reply.append(box);if(!reducedMotion.matches&&!document.documentElement.classList.contains('motion-paused'))animation=box.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:400,easing:'cubic-bezier(.22,1,.36,1)'});}
 if(reducedMotion.matches||document.documentElement.classList.contains('motion-paused'))finish();else timer=setTimeout(finish,450);document.querySelector('#demo-command').value='';}
 for(const button of buttons)button.addEventListener('click',()=>showExample(button.dataset.demo));document.querySelector('.command-form').addEventListener('submit',event=>{event.preventDefault();const value=document.querySelector('#demo-command').value.trim();if(value)showExample(resolveExample(value),value);});document.querySelector('.replay-button').addEventListener('click',()=>showExample(activeKey));showExample('menu');}

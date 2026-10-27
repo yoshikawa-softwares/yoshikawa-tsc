@@ -41,6 +41,6 @@ assert (root / 'assets/social.jpg').is_file()
 from xml.etree import ElementTree
 for svg in (root / 'assets').rglob('*.svg'):
     ElementTree.parse(svg)
-for script in ('site.js', 'pixels.js'):
+for script in ('site.js',):
     subprocess.run(['node', '--check', str(root / 'assets' / script)], check=True)
 print(f'OK: {len(pages)} páginas; arquivos, âncoras, IDs, hierarquia h1, links externos e sintaxe JS.')

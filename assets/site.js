@@ -45,29 +45,6 @@ if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: re
 }
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const scenes = {
-  admin: {command: '!status', title: 'Configurações do grupo', html: '<div class="status-row"><span>Antispam</span><b>Ativado</b></div><div class="status-row"><span>Permissões</span><b>Administração</b></div><div class="status-row"><span>Moderação</span><b>Configurável</b></div>', note: 'Consulte os ajustes e o diagnóstico do seu grupo.'},
-  media: {command: '!menustickers', title: 'Mídia que vira figurinha', html: '<div class="demo-stickers" aria-label="Ilustrações de figurinhas"><span>&gt;_</span><span>✳</span><span>♡</span></div>', note: 'Encontre os comandos de criação e edição no menu de figurinhas.'},
-  play: {command: '!level', title: 'Seu próximo nível', html: '<div class="demo-level"><b>◇</b><div><strong>Ouro · 12.500 pontos</strong><small>7.500 pontos para Diamante</small></div></div><div class="demo-progress"><i></i></div>', note: 'Uma prévia do progresso. Experimente o simulador de níveis abaixo.'},
-  menu: {command: '!menu', title: 'Por onde vamos começar?', html: '<div class="status-row"><span>Administração</span><b>!menuadm</b></div><div class="status-row"><span>Figurinhas</span><b>!menustickers</b></div><div class="status-row"><span>Downloads</span><b>!menudownloads</b></div>', note: 'O menu organiza as categorias. Os recursos dependem das suas permissões.'}
-};
-let replyAnimation;
-for (const button of document.querySelectorAll('[data-scene]')) {
-  button.addEventListener('click', () => {
-    const scene = scenes[button.dataset.scene];
-    for (const item of document.querySelectorAll('[data-scene]')) item.setAttribute('aria-pressed', String(item === button));
-    document.querySelector('.chat-command').textContent = scene.command;
-    document.querySelector('.input-command').textContent = scene.command;
-    document.querySelector('.chat-input button').dataset.copy = scene.command;
-    document.querySelector('.reply-title').textContent = scene.title;
-    document.querySelector('.reply-content').innerHTML = scene.html;
-    document.querySelector('.reply-note').textContent = scene.note;
-    replyAnimation?.cancel();
-    if (!reducedMotion.matches && !document.documentElement.classList.contains('motion-paused')) {
-      replyAnimation = document.querySelector('.chat-reply').animate([{opacity: 0, transform: 'translateY(10px)'}, {opacity: 1, transform: 'translateY(0)'}], {duration: 450, easing: 'cubic-bezier(.2,.75,.25,1)'});
-    }
-  });
-}
 const motionButton = document.querySelector('.motion-toggle');
 if (motionButton) {
   function reflectMotionPreference() {
@@ -126,14 +103,73 @@ if (scoreInput) {
   renderLevel();
 }
 
+
+const heroSection = document.querySelector('.signal-hero');
+const showcase = document.querySelector('.showcase-section');
+const chapters = [...document.querySelectorAll('[data-chapter]')];
+const panels = [...document.querySelectorAll('[data-panel]')];
+let currentChapter = 0;
+let panelAnimation;
+function setChapter(index) {
+  if (currentChapter === index) return;
+  currentChapter = index;
+  for (const button of chapters) button.setAttribute('aria-pressed', String(Number(button.dataset.chapter) === index));
+  for (const panel of panels) panel.hidden = Number(panel.dataset.panel) !== index;
+  const stage = document.querySelector('.chapter-stage');
+  stage.dataset.chapterActive = String(index);
+  document.querySelector('.chapter-number').textContent = String(index + 1).padStart(2, '0');
+  document.querySelector('.chapter-counter').textContent = `${String(index + 1).padStart(2, '0')} — 03`;
+  panelAnimation?.cancel();
+  if (!document.documentElement.classList.contains('showcase-static')) {
+    panelAnimation = panels[index].animate([{opacity: .1, translate: '0 25px'}, {opacity: 1, translate: '0 0'}], {duration: 700, easing: 'cubic-bezier(.22,1,.36,1)'});
+  }
+}
+function syncStaticMotion() {
+  const isStatic = reducedMotion.matches || document.documentElement.classList.contains('motion-paused');
+  document.documentElement.classList.toggle('showcase-static', isStatic);
+  if (isStatic) {
+    panelAnimation?.cancel();
+    heroSection?.style.setProperty('--hero-progress', '0');
+  }
+  updateScrollProgress();
+}
+for (const button of chapters) button.addEventListener('click', () => {
+  const index = Number(button.dataset.chapter);
+  setChapter(index);
+  if (!document.documentElement.classList.contains('showcase-static')) {
+    const travel = showcase.offsetHeight - innerHeight;
+    scrollTo({top: showcase.getBoundingClientRect().top + scrollY + travel * (index + .15) / 3, behavior: 'smooth'});
+  }
+});
 let scrollFrame;
 function updateScrollProgress() {
-  cancelAnimationFrame(scrollFrame);
+  if (scrollFrame) return;
   scrollFrame = requestAnimationFrame(() => {
+    scrollFrame = 0;
     const distance = document.documentElement.scrollHeight - innerHeight;
     document.documentElement.style.setProperty('--scroll', distance > 0 ? String(scrollY / distance) : '0');
+    if (!document.documentElement.classList.contains('showcase-static')) {
+      if (heroSection) {
+        const rect = heroSection.getBoundingClientRect();
+        const progress = Math.min(1, Math.max(0, -rect.top / Math.max(1, rect.height - innerHeight)));
+        heroSection.style.setProperty('--hero-progress', String(progress));
+      }
+      if (showcase) {
+        const rect = showcase.getBoundingClientRect();
+        const progress = Math.min(.999, Math.max(0, -rect.top / Math.max(1, rect.height - innerHeight)));
+        setChapter(Math.floor(progress * 3));
+      }
+    }
   });
+}
+if ('IntersectionObserver' in window) {
+  const textObserver = new IntersectionObserver(entries => {
+    for (const entry of entries) entry.target.classList.toggle('is-lit', entry.isIntersecting);
+  }, {threshold: .6});
+  for (const word of document.querySelectorAll('.kinetic-text>span')) textObserver.observe(word);
 }
 addEventListener('scroll', updateScrollProgress, {passive: true});
 addEventListener('resize', updateScrollProgress);
-updateScrollProgress();
+reducedMotion.addEventListener('change', syncStaticMotion);
+document.querySelector('.motion-toggle')?.addEventListener('click', syncStaticMotion);
+syncStaticMotion();

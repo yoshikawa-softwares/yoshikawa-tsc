@@ -44,7 +44,7 @@ if ('IntersectionObserver' in window) {
   const artworkObserver = new IntersectionObserver(entries => {
     for (const entry of entries) entry.target.classList.toggle('is-offscreen', !entry.isIntersecting);
   });
-  document.querySelectorAll('.crystal-art').forEach(el => artworkObserver.observe(el));
+  document.querySelectorAll('.crystal-art, .reward-card').forEach(el => artworkObserver.observe(el));
 }
 
 const motionButton = document.querySelector('.motion-toggle');
@@ -91,65 +91,14 @@ if (hero || track) {
   updateScene();
 }
 
-const examples = {
-  menu: {command:'!menu', kicker:'RESPOSTA DO BOT', title:'Menu principal', rows:[], note:'Recriação ilustrativa da versão 8.6.17. Usuário e VIP são exemplos; o menu pode mudar.'},
-  admin: {command:'!status', kicker:'ADMINISTRAÇÃO', title:'Configurações do grupo', rows:[['Moderação','Configurável'],['Permissões','Por função'],['Diagnóstico','!status']], note:'Administradores podem consultar o status e escolher as configurações adequadas ao grupo.'},
-  media: {command:'!menustickers', kicker:'MÍDIA E FIGURINHAS', title:'Figurinhas para a conversa', rows:[['Categoria','Figurinhas'],['Ferramentas','Criação e edição']], note:'Abra o menu de figurinhas para encontrar as ferramentas disponíveis.'},
-  level: {command:'!level', kicker:'NÍVEIS', title:'Seu próximo nível', rows:[['Rank atual','Ouro'],['Pontuação','12.500 pontos'],['Próximo marco','7.500 para Diamante']], note:'Pontuação ilustrativa. O simulador abaixo permite explorar os marcos e benefícios.'}
-};
-const fallback = {kicker:'DEMONSTRAÇÃO',title:'Experimente um destes comandos',rows:[['Menu','!menu'],['Grupo','!status'],['Figurinhas','!menustickers'],['Nível','!level']],note:'Esta prévia entende apenas os comandos acima. No WhatsApp, consulte o menu completo do bot.'};
-const demoStage = document.querySelector('.demo-stage');
-if (demoStage) {
-  const tabs = [...document.querySelectorAll('[data-demo]')];
-  const card = demoStage.querySelector('.response-card');
-  const input = document.querySelector('#demo-command');
-  let currentKey = 'menu';
-  let timer;
-  function showExample(key, command) {
-    const example = examples[key] || fallback;
-    currentKey = key || 'menu';
-    clearTimeout(timer);
-    tabs.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.demo === key)));
-    demoStage.querySelector('.demo-command').textContent = command || example.command;
-    card.classList.add('changing');
-    const render = () => {
-      card.querySelector('.response-kicker').textContent = example.kicker;
-      card.querySelector('.response-title').textContent = example.title;
-      const rows = card.querySelector('.response-body'); rows.replaceChildren();
-      if (key === 'menu') rows.append(document.querySelector('#menu-preview-template').content.cloneNode(true));
-      for (const [label, value] of example.rows) {
-        const row = document.createElement('div');
-        const name = document.createElement('span'); name.textContent = label;
-        const code = document.createElement('code'); code.textContent = value;
-        row.append(name, code); rows.append(row);
-      }
-      card.querySelector('.response-note').textContent = example.note;
-      card.classList.remove('changing');
-    };
-    if (reducedMotion.matches || root.classList.contains('motion-paused')) render();
-    else timer = setTimeout(render, 130);
-  }
-  for (const button of tabs) button.addEventListener('click', () => showExample(button.dataset.demo));
-  document.querySelectorAll('[data-pick]').forEach(link => link.addEventListener('click', () => showExample(link.dataset.pick)));
-  document.querySelector('.demo-reset').addEventListener('click', () => showExample(currentKey));
-  document.querySelector('.command-form').addEventListener('submit', event => {
-    event.preventDefault();
-    const command = input.value.trim();
-    if (!command) return;
-    const normalized = command.toLowerCase();
-    const key = ['!menu','menu'].includes(normalized) ? 'menu' : ['!status','!menuadm'].includes(normalized) ? 'admin' : ['!menustickers','!sticker','!s'].includes(normalized) ? 'media' : ['!level','!rank'].includes(normalized) ? 'level' : null;
-    showExample(key, command); input.value = '';
-  });
-}
-
 const score = document.querySelector('#score');
 if (score) {
   const ranks = [
-    {name:'Bronze', points:0, key:'bronze', glyph:'✦'},
-    {name:'Prata', points:2000, key:'silver', glyph:'✦'},
-    {name:'Ouro', points:4000, key:'gold', glyph:'✦'},
-    {name:'Diamante', points:20000, key:'diamond', glyph:'◆'},
-    {name:'Estelar', points:100000, key:'stellar', glyph:'✦'}
+    {name:'Bronze', points:0, key:'bronze', art:'assets/crystal-star.webp'},
+    {name:'Prata', points:2000, key:'silver', art:'assets/crystal-star.webp'},
+    {name:'Ouro', points:4000, key:'gold', art:'assets/crystal-star.webp'},
+    {name:'Diamante', points:20000, key:'diamond', art:'assets/crystal-diamond.webp'},
+    {name:'Estelar', points:100000, key:'stellar', art:'assets/crystal-stellar.webp'}
   ];
   const formatter = new Intl.NumberFormat('pt-BR');
   const buttons = [...document.querySelectorAll('[data-score]')];
@@ -161,7 +110,7 @@ if (score) {
     const progress = next ? (value-current.points)/(next.points-current.points) : 1;
     document.querySelector('.level-simulator').dataset.rank = current.key;
     document.querySelector('.level-current').textContent = current.name;
-    document.querySelector('.rank-emblem-inner').textContent = current.glyph;
+    document.querySelector('.rank-emblem-inner').src = current.art;
     document.querySelector('.level-points').textContent = formatter.format(value);
     document.querySelector('.level-next').textContent = next ? `${formatter.format(next.points-value)} para ${next.name}` : 'Nível máximo: Estelar';
     document.querySelector('#score-output').textContent = `${formatter.format(value)} pontos`;

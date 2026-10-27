@@ -45,25 +45,27 @@ if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: re
 }
 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-const lab = document.querySelector('.command-lab');
-const demos = {
-  admin: { command: '!status', title: 'Configurações e diagnóstico do grupo', description: 'Consulta as informações e o estado das configurações do grupo.' },
-  media: { command: '!menustickers', title: 'Ferramentas para criar figurinhas', description: 'Mostra os comandos de figurinhas disponíveis no bot.' },
-  play: { command: '!level', title: 'Pontuação e próximo nível', description: 'Exibe o rank atual e o progresso para o próximo nível.' }
+const scenes = {
+  admin: {command: '!status', title: 'Configurações do grupo', html: '<div class="status-row"><span>Antispam</span><b>Ativado</b></div><div class="status-row"><span>Permissões</span><b>Administração</b></div><div class="status-row"><span>Moderação</span><b>Configurável</b></div>', note: 'Consulte os ajustes e o diagnóstico do seu grupo.'},
+  media: {command: '!menustickers', title: 'Mídia que vira figurinha', html: '<div class="demo-stickers" aria-label="Ilustrações de figurinhas"><span>&gt;_</span><span>✳</span><span>♡</span></div>', note: 'Encontre os comandos de criação e edição no menu de figurinhas.'},
+  play: {command: '!level', title: 'Seu próximo nível', html: '<div class="demo-level"><b>◇</b><div><strong>Ouro · 12.500 pontos</strong><small>7.500 pontos para Diamante</small></div></div><div class="demo-progress"><i></i></div>', note: 'Uma prévia do progresso. Experimente o simulador de níveis abaixo.'},
+  menu: {command: '!menu', title: 'Por onde vamos começar?', html: '<div class="status-row"><span>Administração</span><b>!menuadm</b></div><div class="status-row"><span>Figurinhas</span><b>!menustickers</b></div><div class="status-row"><span>Downloads</span><b>!menudownloads</b></div>', note: 'O menu organiza as categorias. Os recursos dependem das suas permissões.'}
 };
-for (const button of document.querySelectorAll('[data-demo]')) {
+let replyAnimation;
+for (const button of document.querySelectorAll('[data-scene]')) {
   button.addEventListener('click', () => {
-    const demo = demos[button.dataset.demo];
-    lab.dataset.mode = button.dataset.demo;
-    for (const item of lab.querySelectorAll('[data-demo]')) item.setAttribute('aria-pressed', String(item === button));
-    lab.querySelector('.svg-command').textContent = demo.command;
-    lab.querySelector('.output-kicker').textContent = demo.command;
-    lab.querySelector('.output-title').textContent = demo.title;
-    lab.querySelector('.output-description').textContent = demo.description;
-    if (!reducedMotion.matches) lab.querySelector('.demo-output').animate([
-      { opacity: 0.3, transform: 'translateY(6px)' },
-      { opacity: 1, transform: 'translateY(0)' }
-    ], { duration: 350, easing: 'ease-out' });
+    const scene = scenes[button.dataset.scene];
+    for (const item of document.querySelectorAll('[data-scene]')) item.setAttribute('aria-pressed', String(item === button));
+    document.querySelector('.chat-command').textContent = scene.command;
+    document.querySelector('.input-command').textContent = scene.command;
+    document.querySelector('.chat-input button').dataset.copy = scene.command;
+    document.querySelector('.reply-title').textContent = scene.title;
+    document.querySelector('.reply-content').innerHTML = scene.html;
+    document.querySelector('.reply-note').textContent = scene.note;
+    replyAnimation?.cancel();
+    if (!reducedMotion.matches && !document.documentElement.classList.contains('motion-paused')) {
+      replyAnimation = document.querySelector('.chat-reply').animate([{opacity: 0, transform: 'translateY(10px)'}, {opacity: 1, transform: 'translateY(0)'}], {duration: 450, easing: 'cubic-bezier(.2,.75,.25,1)'});
+    }
   });
 }
 const motionButton = document.querySelector('.motion-toggle');
@@ -73,7 +75,7 @@ if (motionButton) {
     const paused = document.documentElement.classList.contains('motion-paused');
     motionButton.setAttribute('aria-pressed', String(reducedMotion.matches || paused));
     motionButton.setAttribute('aria-label', reducedMotion.matches ? 'Movimento reduzido pelo sistema' : paused ? 'Retomar animações' : 'Pausar animações');
-    motionButton.querySelector('span').textContent = reducedMotion.matches ? 'Reduzido' : paused ? 'Retomar' : 'Pausar';
+    motionButton.querySelector('span').textContent = reducedMotion.matches ? 'Reduzido' : paused ? 'Retomar animações' : 'Pausar animações';
   }
   reflectMotionPreference();
   reducedMotion.addEventListener('change', reflectMotionPreference);
@@ -81,7 +83,7 @@ if (motionButton) {
     const paused = document.documentElement.classList.toggle('motion-paused');
     motionButton.setAttribute('aria-pressed', String(paused));
     motionButton.setAttribute('aria-label', paused ? 'Retomar animações' : 'Pausar animações');
-    motionButton.querySelector('span').textContent = paused ? 'Retomar' : 'Pausar';
+    motionButton.querySelector('span').textContent = paused ? 'Retomar animações' : 'Pausar animações';
   });
 }
 if ('IntersectionObserver' in window) {
@@ -123,3 +125,15 @@ if (scoreInput) {
   });
   renderLevel();
 }
+
+let scrollFrame;
+function updateScrollProgress() {
+  cancelAnimationFrame(scrollFrame);
+  scrollFrame = requestAnimationFrame(() => {
+    const distance = document.documentElement.scrollHeight - innerHeight;
+    document.documentElement.style.setProperty('--scroll', distance > 0 ? String(scrollY / distance) : '0');
+  });
+}
+addEventListener('scroll', updateScrollProgress, {passive: true});
+addEventListener('resize', updateScrollProgress);
+updateScrollProgress();

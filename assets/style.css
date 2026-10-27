@@ -106,3 +106,5 @@ html.motion-paused .conversation-track{height:auto;min-height:0}html.motion-paus
 @media(max-width:760px){.conversation-visual{min-height:535px}.phone{height:535px}.phone-body{height:382px}}
 
 .level-simulator[data-rank=diamond] .rank-emblem-inner{color:#d8fcff;text-shadow:0 3px 6px #13454c99}
+
+@media(max-width:360px){.demo-tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.demo-tabs button{flex-direction:row;justify-content:flex-start;min-height:44px;padding:9px;font-size:10px}.hero-more{font-size:11px;white-space:nowrap}}

@@ -37,6 +37,6 @@ for name, page in pages.items():
         if url.fragment:
             assert url.fragment in pages[target].ids, f'{name}: âncora ausente {ref}'
 assert (root / 'assets/social.jpg').is_file()
-for script in ('site.js', 'signal.js'):
+for script in ('site.js', 'pixels.js'):
     subprocess.run(['node', '--check', str(root / 'assets' / script)], check=True)
 print(f'OK: {len(pages)} páginas; arquivos, âncoras, IDs, hierarquia h1, links externos e sintaxe JS.')

@@ -52,7 +52,7 @@ if (motionButton) {
     const paused = document.documentElement.classList.contains('motion-paused');
     motionButton.setAttribute('aria-pressed', String(reducedMotion.matches || paused));
     motionButton.setAttribute('aria-label', reducedMotion.matches ? 'Movimento reduzido pelo sistema' : paused ? 'Retomar animações' : 'Pausar animações');
-    motionButton.querySelector('span').textContent = reducedMotion.matches ? 'Reduzido' : paused ? 'Retomar animações' : 'Pausar animações';
+    motionButton.querySelector('span').textContent = reducedMotion.matches ? 'Reduzido' : paused ? 'Retomar' : 'Pausar';
   }
   reflectMotionPreference();
   reducedMotion.addEventListener('change', reflectMotionPreference);
@@ -60,7 +60,7 @@ if (motionButton) {
     const paused = document.documentElement.classList.toggle('motion-paused');
     motionButton.setAttribute('aria-pressed', String(paused));
     motionButton.setAttribute('aria-label', paused ? 'Retomar animações' : 'Pausar animações');
-    motionButton.querySelector('span').textContent = paused ? 'Retomar animações' : 'Pausar animações';
+    motionButton.querySelector('span').textContent = paused ? 'Retomar' : 'Pausar';
   });
 }
 if ('IntersectionObserver' in window) {
@@ -102,74 +102,24 @@ if (scoreInput) {
   });
   renderLevel();
 }
-
-
-const heroSection = document.querySelector('.signal-hero');
-const showcase = document.querySelector('.showcase-section');
-const chapters = [...document.querySelectorAll('[data-chapter]')];
-const panels = [...document.querySelectorAll('[data-panel]')];
-let currentChapter = 0;
-let panelAnimation;
-function setChapter(index) {
-  if (currentChapter === index) return;
-  currentChapter = index;
-  for (const button of chapters) button.setAttribute('aria-pressed', String(Number(button.dataset.chapter) === index));
-  for (const panel of panels) panel.hidden = Number(panel.dataset.panel) !== index;
-  const stage = document.querySelector('.chapter-stage');
-  stage.dataset.chapterActive = String(index);
-  document.querySelector('.chapter-number').textContent = String(index + 1).padStart(2, '0');
-  document.querySelector('.chapter-counter').textContent = `${String(index + 1).padStart(2, '0')} — 03`;
-  panelAnimation?.cancel();
-  if (!document.documentElement.classList.contains('showcase-static')) {
-    panelAnimation = panels[index].animate([{opacity: .1, translate: '0 25px'}, {opacity: 1, translate: '0 0'}], {duration: 700, easing: 'cubic-bezier(.22,1,.36,1)'});
-  }
-}
-function syncStaticMotion() {
-  const isStatic = reducedMotion.matches || document.documentElement.classList.contains('motion-paused');
-  document.documentElement.classList.toggle('showcase-static', isStatic);
-  if (isStatic) {
-    panelAnimation?.cancel();
-    heroSection?.style.setProperty('--hero-progress', '0');
-  }
-  updateScrollProgress();
-}
-for (const button of chapters) button.addEventListener('click', () => {
-  const index = Number(button.dataset.chapter);
-  setChapter(index);
-  if (!document.documentElement.classList.contains('showcase-static')) {
-    const travel = showcase.offsetHeight - innerHeight;
-    scrollTo({top: showcase.getBoundingClientRect().top + scrollY + travel * (index + .15) / 3, behavior: 'smooth'});
-  }
-});
-let scrollFrame;
-function updateScrollProgress() {
-  if (scrollFrame) return;
-  scrollFrame = requestAnimationFrame(() => {
-    scrollFrame = 0;
-    const distance = document.documentElement.scrollHeight - innerHeight;
-    document.documentElement.style.setProperty('--scroll', distance > 0 ? String(scrollY / distance) : '0');
-    if (!document.documentElement.classList.contains('showcase-static')) {
-      if (heroSection) {
-        const rect = heroSection.getBoundingClientRect();
-        const progress = Math.min(1, Math.max(0, -rect.top / Math.max(1, rect.height - innerHeight)));
-        heroSection.style.setProperty('--hero-progress', String(progress));
-      }
-      if (showcase) {
-        const rect = showcase.getBoundingClientRect();
-        const progress = Math.min(.999, Math.max(0, -rect.top / Math.max(1, rect.height - innerHeight)));
-        setChapter(Math.floor(progress * 3));
-      }
-    }
-  });
-}
-if ('IntersectionObserver' in window) {
-  const textObserver = new IntersectionObserver(entries => {
-    for (const entry of entries) entry.target.classList.toggle('is-lit', entry.isIntersecting);
-  }, {threshold: .6});
-  for (const word of document.querySelectorAll('.kinetic-text>span')) textObserver.observe(word);
-}
-addEventListener('scroll', updateScrollProgress, {passive: true});
-addEventListener('resize', updateScrollProgress);
-reducedMotion.addEventListener('change', syncStaticMotion);
-document.querySelector('.motion-toggle')?.addEventListener('click', syncStaticMotion);
-syncStaticMotion();
+const themeButton=document.querySelector('.theme-toggle');
+themeButton.addEventListener('click',()=>{const light=document.body.classList.toggle('light');const label=light?'Ativar tema escuro':'Ativar tema claro';themeButton.setAttribute('aria-label',label);themeButton.title=label;themeButton.textContent=light?'◔':'☼';});
+const mascot=document.querySelector('.mascot');mascot?.addEventListener('click',()=>{mascot.dataset.color=String(((Number(mascot.dataset.color)||0)+1)%3);});
+const howStage=document.querySelector('.how-stage');
+if(howStage&&'IntersectionObserver' in window){const steps=[...document.querySelectorAll('.how-step')];const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(!entry.isIntersecting)continue;howStage.dataset.active=entry.target.dataset.step;for(const step of steps)step.classList.toggle('is-active',step===entry.target);}},{rootMargin:'-15% 0px -30% 0px',threshold:.15});for(const step of steps)observer.observe(step);howStage.dataset.active='0';}
+const examples={
+menu:{command:'!menu',title:'Por onde vamos começar?',html:'<div class="reply-row"><span>Administração</span><code>!menuadm</code></div><div class="reply-row"><span>Figurinhas</span><code>!menustickers</code></div><div class="reply-row"><span>Downloads</span><code>!menudownloads</code></div>',note:'Escolha uma categoria para ver os comandos. Alguns recursos dependem de permissões ou benefícios ativos.'},
+admin:{command:'!status',title:'Configurações do grupo',html:'<div class="reply-row"><span>Moderação</span><code>Configurável</code></div><div class="reply-row"><span>Permissões</span><code>Por função</code></div><div class="reply-row"><span>Diagnóstico</span><code>!status</code></div>',note:'Os administradores podem consultar o status e escolher as configurações adequadas ao grupo.'},
+media:{command:'!menustickers',title:'Figurinhas para a conversa',html:'<div class="reply-stickers" aria-label="Exemplos de figurinhas"><span>✳</span><span>&gt;_</span><span>♡</span></div><div class="reply-row"><span>Categoria</span><code>Figurinhas</code></div>',note:'Abra o menu de figurinhas para encontrar as ferramentas de criação e edição disponíveis.'},
+level:{command:'!level',title:'Seu próximo nível',html:'<div class="reply-rank"><span>◇</span><div><strong>Ouro · 12.500 pontos</strong><small>7.500 para Diamante</small></div></div><div class="reply-progress"><i></i></div>',note:'Pontuação ilustrativa. O simulador abaixo permite explorar os marcos e benefícios.'}
+};
+function resolveExample(command){const normalized=command.trim().toLowerCase();if(['!menu','menu'].includes(normalized))return'menu';if(['!status','!menuadm'].includes(normalized))return'admin';if(['!menustickers','!sticker','!s'].includes(normalized))return'media';if(['!level','!rank'].includes(normalized))return'level';return null;}
+const messageArea=document.querySelector('.demo-messages');
+if(messageArea){let timer,animation,activeKey='menu';const buttons=[...document.querySelectorAll('[data-demo]')];
+function showExample(key,typedCommand){clearTimeout(timer);animation?.cancel();activeKey=key||'menu';for(const button of buttons)button.setAttribute('aria-pressed',String(key===button.dataset.demo));
+const demo=key?examples[key]:{command:typedCommand,title:'Vamos testar um comando de exemplo?',html:'<div class="reply-row"><span>Menu</span><code>!menu</code></div><div class="reply-row"><span>Grupo</span><code>!status</code></div><div class="reply-row"><span>Figurinhas</span><code>!menustickers</code></div><div class="reply-row"><span>Nível</span><code>!level</code></div>',note:'Esta prévia entende apenas os comandos acima. No WhatsApp, consulte o menu completo do bot.'};
+messageArea.replaceChildren();const user=document.createElement('div');user.className='chat-message';user.innerHTML='<span class="person-avatar">K</span><div><span class="message-author">Você <small>agora</small></span><p class="typed-command"></p></div>';user.querySelector('.typed-command').textContent=typedCommand||demo.command;messageArea.append(user);
+const bot=document.createElement('div');bot.className='chat-message';bot.innerHTML='<img class="message-avatar" src="assets/yoshi.svg" width="31" height="34" alt=""><div class="demo-reply"><span class="message-author">Yoshikawa TSC <span class="bot-tag">BOT</span></span><div class="typing" aria-label="Preparando exemplo"><i></i><i></i><i></i></div></div>';messageArea.append(bot);
+function finish(){const reply=bot.querySelector('.demo-reply');const box=document.createElement('div');box.className='reply-box';const heading=document.createElement('h4');heading.textContent=demo.title;box.append(heading);const content=document.createElement('div');content.innerHTML=demo.html;box.append(content);const note=document.createElement('p');note.textContent=demo.note;box.append(note);reply.querySelector('.typing')?.remove();reply.append(box);if(!reducedMotion.matches&&!document.documentElement.classList.contains('motion-paused'))animation=box.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:400,easing:'cubic-bezier(.22,1,.36,1)'});}
+if(reducedMotion.matches||document.documentElement.classList.contains('motion-paused'))finish();else timer=setTimeout(finish,450);document.querySelector('#demo-command').value='';}
+for(const button of buttons)button.addEventListener('click',()=>showExample(button.dataset.demo));document.querySelector('.command-form').addEventListener('submit',event=>{event.preventDefault();const value=document.querySelector('#demo-command').value.trim();if(value)showExample(resolveExample(value),value);});document.querySelector('.replay-button').addEventListener('click',()=>showExample(activeKey));showExample('menu');}

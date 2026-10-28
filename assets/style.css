@@ -259,3 +259,64 @@ html.motion-paused .conversation-track{height:auto;min-height:0}html.motion-paus
   html:not(.js-menu) .site-header nav{display:flex;position:static;order:3;width:100%;padding:4px 0 0;box-shadow:none;background:transparent;flex-direction:column}
   html:not(.js-menu) .menu-toggle{display:none}
 }
+
+/* Homepage: an editorial introduction and a practical command guide. */
+.hero{padding:0 0 24px;text-align:left;background:radial-gradient(ellipse at 70% 44%,#101d2e 0,transparent 42%),#000}
+.hero-inner{width:min(1320px,calc(100% - 88px));min-height:min(720px,calc(100svh - 110px));margin:auto;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);align-items:center;gap:12px}
+.hero-copy{padding:70px 0;max-width:570px}
+.hero h1{font-size:clamp(54px,6vw,88px)}
+.hero-lead{font-size:clamp(25px,2.8vw,39px);line-height:1.16;margin-top:18px}
+.hero-description{max-width:430px;font-size:16px;margin-top:20px}
+.hero-actions{justify-content:flex-start;gap:26px;margin-top:30px}
+.hero-capabilities{display:flex;flex-wrap:wrap;gap:8px;margin-top:42px}
+.hero-capabilities span{border:1px solid #ffffff23;background:#ffffff08;border-radius:100px;padding:7px 12px;color:#c2c9d3;font-size:11px;font-weight:550}
+.hero-art{width:100%;height:auto;aspect-ratio:1680/1050;max-height:660px;margin:0;mask-image:linear-gradient(90deg,transparent,#000 14%,#000 92%,transparent)}
+.hero-art img{object-fit:contain}
+.hero-foot{padding-top:20px;border-top:1px solid #ffffff18;color:#a0a5ae}
+.commands-section{background:radial-gradient(ellipse at 90% 0,#101b2b 0,transparent 40%),#090b10}
+.commands-heading{display:flex;align-items:end;justify-content:space-between;gap:48px}
+.commands-heading h2{font-size:clamp(40px,5vw,68px);line-height:1.08;margin-top:20px}
+.commands-heading h2 span{color:#a7adb9}
+.commands-heading>p{max-width:340px;line-height:1.7;color:#bec4ce}
+.commands-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:56px}
+.command-card{min-width:0;min-height:224px;padding:24px;border:1px solid #2b303a;border-radius:20px;background:linear-gradient(145deg,#171c25,#101217);transition:border-color .25s,transform .35s var(--ease)}
+.command-card:hover,.command-card:focus-within{border-color:#6685a8;transform:translateY(-4px)}
+.command-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.command-top>span{font-size:10px;font-weight:700;letter-spacing:.08em;color:#a9b4c5}
+.command-top button{flex:none;min-height:38px;padding:8px 10px;border:1px solid #ffffff20;border-radius:9px;background:#ffffff08;color:#d1e7ff;font-size:11px;font-weight:600}
+.command-top button:hover{background:#ffffff16}
+.command-top button span{margin-left:4px}
+.command-card h3{margin-top:36px;font-size:25px;letter-spacing:-.04em}
+.command-card h3 code{font:inherit;color:#edf5ff}
+.command-card p{margin-top:12px;font-size:13px;line-height:1.6;color:#b8c0cb}
+.commands-note{font-size:12px;line-height:1.6;margin-top:20px;color:#a5adba}
+html:not(.js-menu) [data-copy]{display:none}
+@media(max-width:1050px){
+  .hero-inner{width:calc(100% - 56px);min-height:580px}
+  .commands-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:760px){
+  .hero-inner{width:calc(100% - 40px);min-height:0;display:flex;flex-direction:column;gap:0;align-items:stretch}
+  .hero-copy{padding:60px 0 0}
+  .hero h1{font-size:clamp(43px,11vw,66px)}
+  .hero-lead{font-size:clamp(25px,7vw,34px)}
+  .hero-description{font-size:15px;max-width:360px;margin:18px 0 0}
+  .hero-actions{justify-content:flex-start;gap:16px 20px}
+  .hero-capabilities{margin-top:28px}
+  .hero-art{height:auto;aspect-ratio:1680/1100;margin:12px 0 0;max-height:none;mask-image:linear-gradient(180deg,transparent,#000 10%,#000 90%,transparent)}
+  .hero-art img{object-fit:contain}
+  .hero-foot{gap:20px;padding-top:18px}
+  .commands-heading{display:block}
+  .commands-heading h2{font-size:clamp(36px,9vw,52px)}
+  .commands-heading>p{font-size:15px;margin-top:22px}
+  .commands-grid{margin-top:36px;gap:10px}
+  .command-card{min-height:200px;padding:20px}
+  .command-card h3{font-size:22px;margin-top:30px}
+}
+@media(max-width:430px){
+  .commands-grid{grid-template-columns:1fr}
+  .command-card{min-height:0}
+  .command-card h3{margin-top:22px}
+}
+@media(prefers-reduced-motion:reduce){.command-card:hover,.command-card:focus-within{transform:none}}
+html.motion-paused .command-card:hover,html.motion-paused .command-card:focus-within{transform:none}

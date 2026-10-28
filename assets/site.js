@@ -2,6 +2,7 @@ const root = document.documentElement;
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const menu = document.querySelector('.menu-toggle');
 const nav = document.querySelector('#nav');
+if (menu && nav) root.classList.add('js-menu');
 
 function setMenu(open) {
   if (!menu || !nav) return;
@@ -15,6 +16,9 @@ document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && menu?.getAttribute('aria-expanded') === 'true') { setMenu(false); menu.focus(); }
 });
 document.addEventListener('click', event => { if (!event.target.closest('.site-header')) setMenu(false); });
+window.matchMedia('(min-width: 761px)').addEventListener('change', event => {
+  if (event.matches) setMenu(false);
+});
 
 
 let toastTimer;
@@ -48,13 +52,20 @@ if ('IntersectionObserver' in window) {
 }
 
 const motionButton = document.querySelector('.motion-toggle');
+try { root.classList.toggle('motion-paused', localStorage.getItem('yoshikawa-motion-paused') === 'true'); } catch {}
 function syncMotion() {
+  if (!motionButton) return;
   const paused = root.classList.contains('motion-paused');
   motionButton.disabled = reducedMotion.matches;
   motionButton.setAttribute('aria-pressed', String(paused || reducedMotion.matches));
   motionButton.textContent = reducedMotion.matches ? 'Movimento reduzido pelo sistema' : paused ? 'Retomar animações' : 'Pausar animações';
 }
-motionButton?.addEventListener('click', () => { root.classList.toggle('motion-paused'); syncMotion(); updateScene(); });
+motionButton?.addEventListener('click', () => {
+  root.classList.toggle('motion-paused');
+  try { localStorage.setItem('yoshikawa-motion-paused', String(root.classList.contains('motion-paused'))); } catch {}
+  syncMotion();
+  updateScene();
+});
 reducedMotion.addEventListener('change', () => { syncMotion(); updateScene(); });
 if (motionButton) syncMotion();
 

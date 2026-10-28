@@ -237,3 +237,25 @@ html.motion-paused .conversation-track{height:auto;min-height:0}html.motion-paus
   .rank-ring{width:135px}
   .rank-buttons button{font-size:9px}
 }
+
+/* Clearer hierarchy, comfortable touch targets and resilient navigation. */
+.hero-kicker{display:inline-flex;align-items:center;gap:9px;margin:0 0 22px;color:#b9d9ff;font-size:11px;font-weight:700;letter-spacing:.12em}
+.hero-kicker span{width:7px;height:7px;border-radius:50%;background:#80bfff;box-shadow:0 0 16px #54a6ff}
+.hero-description{line-height:1.65}
+.hero-art img{will-change:auto}
+.faq-intro{max-width:300px;margin-top:22px;line-height:1.7}
+.faq-layout .faq-support{display:flex;width:max-content;max-width:100%;margin-top:16px}
+.js .reveal:focus-within{opacity:1;transform:none}
+.site-header nav a:focus-visible,.nav-channel:focus-visible{outline-color:#a7d1ff}
+@media(max-width:760px){
+  .hero-kicker{font-size:10px;letter-spacing:.08em;margin-bottom:18px}
+  .hero-actions{flex-wrap:wrap}
+  .hero-description br{display:none}
+  .menu-toggle{width:44px;height:44px}
+  .site-header nav{max-height:calc(100dvh - 54px);overflow:auto}
+  .site-header nav a{min-height:48px;display:flex;align-items:center}
+  html:not(.js-menu) .site-header{height:auto;position:relative}
+  html:not(.js-menu) .nav-inner{height:auto;min-height:54px;flex-wrap:wrap;padding:12px 0}
+  html:not(.js-menu) .site-header nav{display:flex;position:static;order:3;width:100%;padding:4px 0 0;box-shadow:none;background:transparent;flex-direction:column}
+  html:not(.js-menu) .menu-toggle{display:none}
+}

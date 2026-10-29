@@ -8,10 +8,12 @@ root = Path(__file__).resolve().parents[1]
 class Page(HTMLParser):
     def __init__(self, path):
         super().__init__()
-        self.ids, self.refs, self.h1 = set(), [], 0
+        self.ids, self.refs, self.h1, self.color_schemes = set(), [], 0, []
         self.feed(path.read_text())
     def handle_starttag(self, tag, attrs):
         a = dict(attrs)
+        if tag == 'meta' and a.get('name') == 'color-scheme':
+            self.color_schemes.append(a.get('content'))
         if 'id' in a:
             assert a['id'] not in self.ids, f"ID duplicado: {a['id']}"
             self.ids.add(a['id'])
@@ -25,6 +27,7 @@ class Page(HTMLParser):
 pages = {p.name: Page(p) for p in root.glob('*.html')}
 for name, page in pages.items():
     assert page.h1 == 1, f'{name}: deve ter um h1'
+    assert page.color_schemes == ['dark'], f'{name}: esquema deve ser apenas escuro'
     for ref in page.refs:
         url = urlsplit(ref)
         if url.scheme or url.netloc:

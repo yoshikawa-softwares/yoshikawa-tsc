@@ -1,57 +1,55 @@
-// Tests the shared script's state changes without a browser or third-party packages.
+// State transitions for navigation, copying and the level simulator.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const script = fs.readFileSync(require('node:path').join(__dirname, '../assets/site.js'), 'utf8');
-
-function element() {
+const source = fs.readFileSync(require('node:path').join(__dirname, '../assets/site.js'), 'utf8');
+function element(data = {}) {
   const attributes = {}, handlers = {}, classes = new Set();
-  return {
-    attributes, handlers, dataset: {}, textContent: '', value: '', style: {setProperty() {}},
-    classList: {
-      add: name => classes.add(name), contains: name => classes.has(name),
-      toggle(name, force) { const active = force ?? !classes.has(name); active ? classes.add(name) : classes.delete(name); return active; }
-    },
-    addEventListener: (name, fn) => { handlers[name] = fn; },
-    setAttribute: (name, value) => { attributes[name] = value; },
-    getAttribute: name => attributes[name], focus() { this.focused = true; }
-  };
+  return {dataset: data, attributes, handlers, classList: {
+    add: x => classes.add(x), remove: x => classes.delete(x), contains: x => classes.has(x)
+  }, style: {}, textContent: '', value: '', hidden: false,
+  addEventListener: (name, fn) => {handlers[name] = fn},
+  setAttribute: (key, value) => {attributes[key] = value},
+  removeAttribute: key => {delete attributes[key]},
+  scrollIntoView() {this.scrolled = true}};
 }
-function page(saved = {}, clipboard = {writeText: async () => {}}) {
+function build(clipboard = {writeText: async () => {}}) {
+  const views = ['inicio','recursos','beneficios','ecossistema','ajuda'].map(name => element({view:name}));
+  for (const view of views) {view.id = view.dataset.view; view.closest = () => view}
+  const sub = element(); sub.id = 'comandos'; sub.closest = () => views[1];
+  const links = views.map(view => element({section:view.id}));
+  const buttons = [0,2000,4000,20000,100000].map(value => element({score:String(value)}));
+  const copy = element({copy:'!menu'});
   const root = element();
-  const selectors = Object.fromEntries(['.menu-toggle', '#nav', '.motion-toggle', '.toast', '#score', '.level-simulator', '.level-current', '.rank-emblem-inner', '.level-points', '.level-next', '#score-output', '.ring-progress'].map(name => [name, element()]));
-  selectors['#score'].value = '12500';
-  const ranks = [0, 2000, 4000, 20000, 100000].map(value => {const item = element(); item.dataset.score = String(value); return item;});
-  const copy = element(); copy.dataset.copy = '!menu';
-  const events = {}, media = {matches: false, addEventListener(name, fn) {this[name] = fn;}};
-  const document = {documentElement: root, hidden: false, querySelector: name => selectors[name] || null, querySelectorAll: name => name === '[data-score]' ? ranks : name === '[data-copy]' ? [copy] : [], addEventListener(name, fn) {events[name] = fn;}};
-  const context = {document, window: {matchMedia: () => media}, navigator: {clipboard}, localStorage: {getItem: key => saved[key] ?? null, setItem: (key, value) => {saved[key] = value;}}, Intl, Number, String, Math, addEventListener() {}, requestAnimationFrame: fn => fn(), setTimeout: () => 1, clearTimeout() {}};
-  vm.runInNewContext(script, context);
-  return {root, selectors, ranks, copy, events, media};
+  const lookup = Object.fromEntries(['.simulator','.level-current','.level-points','.level-next','#score-output','.progress-fill','.toast','.view-announcer'].map(x => [x,element()]));
+  lookup['#score'] = element(); lookup['#score'].value = '12500'; lookup['[data-app]'] = element();
+  const events = {}, location = {hash: ''};
+  const document = {documentElement:root,querySelector:selector => lookup[selector] || null,
+    querySelectorAll:selector => ({'[data-view]':views,'[data-section]':links,'[data-score]':buttons,'[data-copy]':[copy]})[selector] || [],
+    getElementById:id => views.find(view=>view.id===id) || (id==='comandos' ? sub : null)};
+  const window = {addEventListener:(name,fn)=>{events[name]=fn},scrollTo(){}};
+  vm.runInNewContext(source,{document,window,location,navigator:{clipboard},requestAnimationFrame:fn=>fn(),Intl,Number,String,Math,setTimeout:()=>1,clearTimeout(){}});
+  return {views,links,buttons,copy,lookup,events,location,sub,root};
 }
-
 (async () => {
-  const saved = {}, first = page(saved);
-  const {selectors, ranks, events} = first;
-  selectors['.menu-toggle'].handlers.click();
-  assert.equal(selectors['.menu-toggle'].attributes['aria-expanded'], 'true');
-  events.keydown({key: 'Escape'});
-  assert.equal(selectors['.menu-toggle'].attributes['aria-expanded'], 'false');
-  assert.equal(selectors['.menu-toggle'].focused, true);
-  selectors['.motion-toggle'].handlers.click();
-  assert.equal(saved['yoshikawa-motion-paused'], 'true');
-  assert.equal(page(saved).root.classList.contains('motion-paused'), true);
-  assert.equal(selectors['.level-current'].textContent, 'Ouro');
-  ranks[3].handlers.click();
-  assert.equal(selectors['.level-current'].textContent, 'Diamante');
-  assert.equal(selectors['.level-next'].textContent, '80.000 para Estelar');
-  ranks[4].handlers.click();
-  assert.equal(selectors['.level-next'].textContent, 'Nível máximo: Estelar');
-  await first.copy.handlers.click();
-  assert.equal(selectors['.toast'].textContent, '!menu copiado.');
-  // A denied clipboard still tells the visitor what to copy.
-  const denied = page({}, {writeText: async () => {throw new Error('denied');}});
-  await denied.copy.handlers.click();
-  assert.equal(denied.selectors['.toast'].textContent, 'Copie o comando: !menu');
-  console.log('OK: menu, movimento, simulador e cópia de comandos.');
-})().catch(error => {console.error(error); process.exitCode = 1;});
+  const p = build();
+  assert.equal(p.root.classList.contains('js-ready'),true);
+  assert.deepEqual(p.views.map(view=>view.hidden),[false,true,true,true,true]);
+  assert.equal(p.links[0].attributes['aria-current'],'page');
+  p.location.hash='#comandos'; p.events.hashchange();
+  assert.equal(p.views[1].hidden,false); assert.equal(p.views[0].hidden,true);
+  assert.equal(p.links[1].attributes['aria-current'],'page'); assert.equal(p.sub.scrolled,true);
+  p.location.hash='#beneficios'; p.events.hashchange();
+  assert.equal(p.views[2].hidden,false);
+  assert.equal(p.lookup['.level-current'].textContent,'Ouro');
+  p.buttons[3].handlers.click();
+  assert.equal(p.lookup['.level-current'].textContent,'Diamante');
+  assert.equal(p.lookup['.level-next'].textContent,'80.000 para Estelar');
+  p.buttons[4].handlers.click();
+  assert.equal(p.lookup['.level-next'].textContent,'Nível máximo: Estelar');
+  assert.equal(p.lookup['.progress-fill'].style.width,'100%');
+  await p.copy.handlers.click(); assert.equal(p.lookup['.toast'].textContent,'!menu copiado.');
+  const denied=build({writeText:async()=>{throw new Error('denied')}});
+  await denied.copy.handlers.click(); assert.equal(denied.lookup['.toast'].textContent,'Copie o comando: !menu');
+  console.log('OK: navegação, links internos, simulador e cópia de comandos.');
+})().catch(error=>{console.error(error);process.exitCode=1});
